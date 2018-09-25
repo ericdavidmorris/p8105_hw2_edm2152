@@ -1,0 +1,13 @@
+---
+title: "p8105_hw2_edm2152"
+author: "Eric Morris"
+date: "September 25, 2018"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+```
+
