@@ -11,3 +11,47 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 ```
 
+## Problem 1
+
+Reading and cleaning the data; retaining line, station, name, station latitude / longitude, routes served, entry, vending, entrance type, and ADA compliance. Converting the entry variable from character (YES vs NO) to a logical variable using ifelse. 
+
+```{r}
+subway_data = 
+  read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>% 
+  janitor::clean_names() %>% 
+  select(line:vending, - exit_only, vending, ada) %>% 
+  mutate(entry = ifelse(entry == "YES", TRUE, FALSE))
+```
+
+This dataset contains variables for the subway line (name), station name, longitude and latitude for station location, subway routes served by the station spread across columns, if the location is an entrance, the entrance type, whether or not there is a vending at the entrance, and if the entrance is ADA compliant. This dataset contains `{r} nrow(subway_data)` rows (observations) and `{r} ncol(subway_data)` columns (variables). This dataset is relatively tidy (?). 
+
+There are `{r} nrow(distinct(subway_data, line, station_name))` distinct stations in this dataset. 
+
+How many stations are ADA compliant?
+
+```{r}
+distinct(subway_data, line, station_name, ada) %>% 
+  count(ada)
+```
+
+There are 84 ADA compliant stations among the 465 distinct stations. 
+
+What proportion of station entrances / exits without vending allow entrance?
+
+The proportion of station entrances/exits without vending that allow entrance is 
+```{r}
+(
+  distinct(subway_data, line, station_name, entry, vending) %>% 
+ filter(entry == TRUE) %>% 
+  filter(vending == "NO") %>% 
+  count()
+/
+  distinct(subway_data, line, station_name, entry) %>% 
+ filter(entry == TRUE) %>% 
+  count()
+)
+```
+
+
+## Problem 2
+
