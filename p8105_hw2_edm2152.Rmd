@@ -40,9 +40,11 @@ There are 84 ADA compliant stations among the 465 distinct stations.
 
 What proportion of station entrances / exits without vending allow entrance?
 
-The proportion of station entrances/exits without vending that allow entrance is 
+The proportion of station entrances/exits without vending that allow entrance is `{r} prop_vend_entr` 
+
 ```{r}
-(
+prop_vend_entr = 
+  (
   select(subway_data, entry, vending) %>% 
  filter(entry == TRUE) %>% 
   filter(vending == "NO") %>% 
@@ -54,12 +56,14 @@ The proportion of station entrances/exits without vending that allow entrance is
 )
 ```
 
-Reformat data so that route number and route name are distinct variables. How many distinct stations serve the A train? Of the stations that serve the A train, how many are ADA compliant?
+Reformat data so that route number and route name are distinct variables. 
 
 ```{r}
 subway_data_reformatted = 
   gather(subway_data, key = route_number, value = route_name, route1:route11)
 ```
+
+How many distinct stations serve the A train? Of the stations that serve the A train, how many are ADA compliant?
 
 ```{r}
 distinct(subway_data_reformatted, line, station_name, route_name) %>% 
@@ -72,7 +76,7 @@ filter(route_name == "A") %>%
   count()
 ```
 
-
+60 distinct stations serve the A train, 17 of these are ADA compliant. 
 
 ## Problem 2
 
@@ -120,7 +124,8 @@ brfss_data = brfss_smart2010 %>%
   select(-class, -topic, -question, -sample_size, -(confidence_limit_low:geo_location)) %>% 
   spread(key = response, value = data_value) %>% 
   janitor::clean_names() %>% 
-  mutate(prop_excellent_vgood = (excellent + very_good) / 100)
+  mutate(prop_excellent_vgood = (excellent + very_good) / 100) %>% 
+  rename(state = locationabbr)
 ```
 
 How many unique locations are included in the dataset? 
@@ -132,20 +137,16 @@ n_distinct(brfss_data$locationdesc)
 Is every state represented? 
 Yes every state plus washington dc (As DC is listed)
 ```{r}
-n_distinct(brfss_data$locationabbr)
+n_distinct(brfss_data$state)
 ```
 
 
 What state is observed the most?
 
 ```{r}
-brfss_data$locationabbr[max(table(brfss_data$locationabbr))] #this is wrong? shows UT
-
-max(table(brfss_data$locationabbr))
-
 brfss_data %>% 
-  count(locationabbr) %>% 
-
+  count(state) %>% 
+  filter(n == max(n))
 ```
 
 New Jersey with 146
@@ -156,16 +157,12 @@ In 2002, what is the median of the “Excellent” response value?
 median(brfss_data$excellent[brfss_data$year == 2002], na.rm = TRUE)
 ```
 
-Below doesn't work, why? 
+
 ```{r}
 brfss_data %>% 
   filter(year == 2002) %>% 
   pull(excellent) %>% 
   median(na.rm = TRUE)
-
-brfss_data %>% 
-  filter(year == 2002) %>% 
-  median(.data = ., excellent, na.rm = TRUE)
 ```
 
 
