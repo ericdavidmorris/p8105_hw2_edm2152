@@ -143,10 +143,12 @@ brfss_data$locationabbr[max(table(brfss_data$locationabbr))] #this is wrong? sho
 
 max(table(brfss_data$locationabbr))
 
+brfss_data %>% 
+  count(locationabbr) %>% 
 
 ```
 
-Utah with 146
+New Jersey with 146
 
 In 2002, what is the median of the “Excellent” response value?
 
@@ -158,7 +160,12 @@ Below doesn't work, why?
 ```{r}
 brfss_data %>% 
   filter(year == 2002) %>% 
-  median(excellent, na.rm = TRUE)
+  pull(excellent) %>% 
+  median(na.rm = TRUE)
+
+brfss_data %>% 
+  filter(year == 2002) %>% 
+  median(.data = ., excellent, na.rm = TRUE)
 ```
 
 
