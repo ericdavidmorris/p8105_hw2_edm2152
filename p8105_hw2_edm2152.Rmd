@@ -82,13 +82,13 @@ Importing Mr. Trash Wheel Data, cleaning variable names, filtering out rows with
 
 ```{r Mr. Trash Wheel}
 mrtrash_data = 
-  readxl::read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = "Mr. Trash Wheel", range = "A2:N256") %>% 
+  readxl::read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = "Mr. Trash Wheel", range = "A2:N336") %>% 
   janitor::clean_names() %>% 
   filter(!is.na(dumpster)) %>% 
   mutate(sports_balls = as.integer(sports_balls))
 ```
 
-Importing the precipitation data for 2016 and 2017 and joining them 
+Importing the precipitation data for 2016 and 2017 and joining them: 
 
 ```{r Precipitation Data}
 prcp2016 = 
@@ -105,7 +105,44 @@ prcpdata_16_17 = full_join(prcp2016, prcp2017) %>%
   mutate(month = month.name[month])
 ```
 
-Write a paragraph about these data; you are encouraged to use inline R. Be sure to note the number of observations in both resulting datasets, and give examples of key variables. For available data, what was the total precipitation in 2017? What was the median number of sports balls in a dumpster in 2016?
+
+```{r}
+med_sports_balls_2016 = 
+  mrtrash_data %>% 
+  filter(year == 2016) %>% 
+  pull(sports_balls) %>% 
+  median(na.rm = TRUE)
+
+total_tons = 
+  mrtrash_data %>% 
+  pull(weight_tons) %>% 
+  sum(na.rm = TRUE)
+
+total_homes = 
+  mrtrash_data %>% 
+  pull(homes_powered) %>% 
+  sum(na.rm = TRUE) %>% 
+  round()
+
+prcp_total_2016 = 
+  prcpdata_16_17 %>% 
+  filter(year == 2016) %>% 
+  pull(total) %>% 
+  sum(na.rm = TRUE) %>% 
+  round(digits = 4)
+
+prcp_total_2017 = 
+  prcpdata_16_17 %>% 
+  filter(year == 2017) %>% 
+  pull(total) %>% 
+  sum(na.rm = TRUE) %>% 
+  round(digits = 4)
+```
+
+In the Mr. Trash data set, there are `r ncol(mrtrash_data)` data variables collected for `r nrow(mrtrash_data)` dumpsters. The median number of sports balls in a dumpster in 2016 was `r med_sports_balls_2016`. The total weight collected by all dumpsters from May 2016 until the end of July 2018 was `r total_tons` tons. So far, `r total_homes` homes have been powered by Mr. Trash Wheel. 
+
+In the combined precipitation data set, there are `r ncol(prcpdata_16_17)` variables (month, total precipiation and year) and `r nrow(prcpdata_16_17)` months of observations (two years). The total precipitation in 2016 was `r prcp_total_2016` inches and the total precipitation in 2017 was `r prcp_total_2017` inches. 
+
 
 ##Problem 3
 
@@ -123,20 +160,24 @@ brfss_data = brfss_smart2010 %>%
   spread(key = response, value = data_value) %>% 
   janitor::clean_names() %>% 
   mutate(prop_excellent_vgood = (excellent + very_good) / 100) %>% 
-  rename(state = locationabbr)
+  rename(state = locationabbr, county = locationdesc)
 ```
 
 
 ```{r}
 unique_locations = 
 brfss_data %>% 
-  distinct(locationdesc) %>% 
+  distinct(county) %>% 
   nrow()
 ```
 
-There are `r unique_locations` unique locations in the dataset.  
+There are `r unique_locations` unique locations (counties) in the dataset.  
 
 ```{r}
+#Viewing a tibble of all the states
+brfss_data %>% 
+  count(state)
+
 unique_states =
   brfss_data %>% 
   distinct(state) %>% 
@@ -144,7 +185,6 @@ unique_states =
 ```
 
 Every state plus Washington D.C. is represented, as there are `r unique_states` unique "states" in the data set. 
-
 
 ```{r}
 brfss_data %>% 
@@ -160,8 +200,6 @@ median_excellent_2002 =
   filter(year == 2002) %>% 
   pull(excellent) %>% 
   median(na.rm = TRUE)
-
-median_excellent_2002
 ```
 
 The median "excellent" response value in 2002 is `r median_excellent_2002 `. 
@@ -179,8 +217,8 @@ Below is a scatterplot showing the proportion of “Excellent” response values
 
 ```{r Scatterplot}
 brfss_data %>% 
-  filter(locationdesc == "NY - New York County" | locationdesc == "NY - Queens County") %>% 
+  filter(county == "NY - New York County" | county == "NY - Queens County") %>% 
   ggplot(aes(x = year, y = excellent)) +
-  geom_point(aes(color = locationdesc))
+  geom_point(aes(color = county))
 ```
 
